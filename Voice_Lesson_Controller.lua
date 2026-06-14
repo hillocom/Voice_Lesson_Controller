@@ -71,21 +71,26 @@ local function PlayAudio(song)
   reaper.SetOnlyTrackSelected(track)
   reaper.Main_OnCommand(40914, 0) 
   
+  -- 1. 古いアイテム（波形）の消去
   local item_count = reaper.CountTrackMediaItems(track)
   for i = item_count - 1, 0, -1 do
     local item = reaper.GetTrackMediaItem(track, i)
     reaper.DeleteTrackMediaItem(track, item)
   end
   
+  -- 既存のテンポマーカー（幽霊マーカー）を後ろから全消去
+  local marker_count = reaper.CountTempoTimeSigMarkers(0)
+  for i = marker_count - 1, 0, -1 do
+    reaper.DeleteTempoTimeSigMarker(0, i)
+  end
+  
+  -- 2. 新しいBPMと「拍子」をまっさらな状態から設定
   local num_bpm = tonumber(song.bpm)
   local num_ts = tonumber(song.ts_num) or 4
   
   if num_bpm and num_bpm > 0 then
-    if reaper.CountTempoTimeSigMarkers(0) > 0 then
-      reaper.SetTempoTimeSigMarker(0, 0, 0, -1, -1, num_bpm, num_ts, 4, false)
-    else
-      reaper.SetTempoTimeSigMarker(0, -1, 0, -1, -1, num_bpm, num_ts, 4, false)
-    end
+    -- マーカーが綺麗に消えたので、新しく先頭（インデックス-1 ＝ 新設）に打ち込む
+    reaper.SetTempoTimeSigMarker(0, -1, 0, -1, -1, num_bpm, num_ts, 4, false)
     reaper.SetCurrentBPM(0, num_bpm, true)
     reaper.UpdateTimeline() 
   end
@@ -150,7 +155,7 @@ local function loop()
     
     -- コントロールパネル
     reaper.ImGui_Separator(ctx)
-    reaper.ImGui_Text(ctx, "🎵 Control Panel") -- タイトルをシンプルに戻しました
+    reaper.ImGui_Text(ctx, "🎵 Control Panel")
     
     local track = reaper.GetTrack(0, 0)
     
@@ -178,9 +183,6 @@ local function loop()
     
     reaper.ImGui_SameLine(ctx)
     
-    -- ---------------------------------------------------------------------
-    -- Key変更ボタンのすぐ右隣に変更した数値を並べる
-    -- ---------------------------------------------------------------------
     local key_str = "原調 (±0)"
     if current_pitch_offset > 0 then
       key_str = "+" .. current_pitch_offset
@@ -188,7 +190,6 @@ local function loop()
       key_str = tostring(current_pitch_offset)
     end
     reaper.ImGui_Text(ctx, "[ Key: " .. key_str .. " ]")
-    -- ---------------------------------------------------------------------
     
     reaper.ImGui_SameLine(ctx)
     reaper.ImGui_Spacing(ctx) 
