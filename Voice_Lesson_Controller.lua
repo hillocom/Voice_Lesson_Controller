@@ -9,13 +9,11 @@ local function LoadSongList(csvPath)
   if not file then return list end
 
   for line in file:lines() do
-    -- ★ 5列（タイトル、パス、タグ、BPM、拍数）の切り出しに挑戦
     local title, path, tag, bpm, ts_num = line:match("^([^,]+),([^,]+),([^,]+),([^,]+),([^,\r\n]+)")
     
-    -- 5列目（拍数）がない古い形式でも壊れないようにケア
     if not title then
       title, path, tag, bpm = line:match("^([^,]+),([^,]+),([^,]+),([^,\r\n]+)")
-      ts_num = "4" -- 拍子が書いてなければとりあえず4拍子にする
+      ts_num = "4"
       if not title then
         title, path, tag = line:match("^([^,]+),([^,]+),([^,\r\n]+)")
         bpm = "120"
@@ -36,7 +34,6 @@ local function LoadSongList(csvPath)
       bpm = bpm:match("^%s*(.-)%s*$")
       ts_num = ts_num:match("^%s*(.-)%s*$")
       
-      -- 箱の中に「ts_num(拍数)」も一緒に保管する
       table.insert(list, { title = title, file = path, tag = tag, bpm = bpm, ts_num = ts_num })
     end
   end
@@ -59,10 +56,15 @@ local selected_index = 0
 local audio_dir = reaper.GetExtState("VoiceLessonJukebox", "AudioDir")
 local filter_text = ""
 
+-- 現在のキーの変更量を保存しておく変数（最初は±0）
+local current_pitch_offset = 0
+
 -- =========================================================================
 -- 再生 ＆ BPM・拍子自動同期関数
 -- =========================================================================
 local function PlayAudio(song)
+  current_pitch_offset = 0
+
   local track = reaper.GetTrack(0, 0)
   if not track then return end
   
@@ -75,19 +77,17 @@ local function PlayAudio(song)
     reaper.DeleteTrackMediaItem(track, item)
   end
   
-  -- BPMと「拍子」を同時にREAPERのタイムラインに強制同期
   local num_bpm = tonumber(song.bpm)
   local num_ts = tonumber(song.ts_num) or 4
   
   if num_bpm and num_bpm > 0 then
-    -- REAPERの一番最初のテンポ/拍子マーカーを上書き、または新設する
     if reaper.CountTempoTimeSigMarkers(0) > 0 then
       reaper.SetTempoTimeSigMarker(0, 0, 0, -1, -1, num_bpm, num_ts, 4, false)
     else
       reaper.SetTempoTimeSigMarker(0, -1, 0, -1, -1, num_bpm, num_ts, 4, false)
     end
     reaper.SetCurrentBPM(0, num_bpm, true)
-    reaper.UpdateTimeline() -- 縦のグリッド線を強制的に描き直させる命令
+    reaper.UpdateTimeline() 
   end
   
   reaper.SetEditCurPos(0, true, false)
@@ -150,42 +150,58 @@ local function loop()
     
     -- コントロールパネル
     reaper.ImGui_Separator(ctx)
-    reaper.ImGui_Text(ctx, "🎵 Control Panel")
+    reaper.ImGui_Text(ctx, "🎵 Control Panel") -- タイトルをシンプルに戻しました
     
     local track = reaper.GetTrack(0, 0)
     
-    -- ♭ボタン（ID40205）
+    -- 1. ♭ボタン
     if reaper.ImGui_Button(ctx, "Key ♭ (-1)") then
       if track then
         reaper.SetOnlyTrackSelected(track)
         reaper.Main_OnCommand(40421, 0) 
         reaper.Main_OnCommand(40205, 0) 
+        current_pitch_offset = current_pitch_offset - 1
       end
     end
     
     reaper.ImGui_SameLine(ctx)
     
-    -- ＃ボタン（ID40205）
+    -- 2. ＃ボタン
     if reaper.ImGui_Button(ctx, "Key ＃ (+1)") then
       if track then
         reaper.SetOnlyTrackSelected(track)
         reaper.Main_OnCommand(40421, 0) 
         reaper.Main_OnCommand(40204, 0) 
+        current_pitch_offset = current_pitch_offset + 1
       end
     end
+    
+    reaper.ImGui_SameLine(ctx)
+    
+    -- ---------------------------------------------------------------------
+    -- Key変更ボタンのすぐ右隣に変更した数値を並べる
+    -- ---------------------------------------------------------------------
+    local key_str = "原調 (±0)"
+    if current_pitch_offset > 0 then
+      key_str = "+" .. current_pitch_offset
+    elseif current_pitch_offset < 0 then
+      key_str = tostring(current_pitch_offset)
+    end
+    reaper.ImGui_Text(ctx, "[ Key: " .. key_str .. " ]")
+    -- ---------------------------------------------------------------------
     
     reaper.ImGui_SameLine(ctx)
     reaper.ImGui_Spacing(ctx) 
     reaper.ImGui_SameLine(ctx)
     
-    -- ❌ Turn off Loop
+    -- 3. ❌ Turn off Loop
     if reaper.ImGui_Button(ctx, "❌ Turn off Loop") then
       reaper.Main_OnCommand(40020, 0) 
     end
     
     reaper.ImGui_SameLine(ctx)
     
-    -- 🔄 波形再描画ボタン
+    -- 4. 🔄 波形再描画ボタン
     if reaper.ImGui_Button(ctx, "🔄 Redraw Waveform") then
       reaper.Main_OnCommand(40441, 0) 
     end
@@ -214,8 +230,6 @@ local function loop()
           
           if show_item then
             local is_selected = (selected_index == i)
-            
-            -- 曲名とBPMに加えて、設定された拍数（3拍子など）も表示
             local display_name = song.title .. " (♩=" .. song.bpm .. " / " .. song.ts_num .. "拍子)"
             
             if reaper.ImGui_Selectable(ctx, display_name, is_selected) then
