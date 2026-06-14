@@ -2,9 +2,8 @@
 
 ボイストレーナーの視点から開発された、日々のレッスンで練習用音源をスムーズに操作するための REAPER 用 ReaScript（Lua）です。
 
-<img width="600" height="400" alt="Image" src="https://github.com/user-attachments/assets/d1217b3d-f5c3-42b6-8e6b-e8c22ea1f233" />
+<img src="./screenshot.png" width="600">
 
----
 
 ## 💡 主な機能
 
