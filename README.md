@@ -53,8 +53,8 @@
 **【作成例】**
 | 曲のタイトル | ファイル名 | キーワード | BPM | 拍子 |
 | :--- | :--- | :--- | :--- | :--- |
-| 春の歌 | harunouta.mp3 | Pop HighVocal 山田 | 120 | 4/4 |
-| 枯葉 | autumn_leaves.wav | Jazz Standard 佐藤 | 90 | 3/4 |
+| 春の歌 | harunouta.mp3 | Pop HighVocal 山田 | 120 | 4 |
+| 枯葉 | autumn_leaves.wav | Jazz Standard 佐藤 | 90 | 3 |
 
 ### 2. 初期設定（初回のみ）
 1. 画面内の「**Path Setting**」から、**音源を保存したフォルダ**と**ソングリスト（CSV）**の場所をそれぞれ指定します。
