@@ -23,10 +23,10 @@
 ## 🛠 導入方法
 
 1. **ReaImGuiの有効化**
-- 事前に拡張機能「ReaPack」をインストールし「ReaImGui」を有効にしておいてください。 
-- ReaPack はこちらからダウンロード　https://reapack.com/
-- 拡張機能（Extension）＞ReaPack ＞ Browse Packages ＞ReaImGui：ReaScript binding for Dear ImGui
-右クリックしてInstall
+  - 事前に拡張機能「ReaPack」をインストールし「ReaImGui」を有効にしておいてください。 
+  - ReaPack はこちらからダウンロード　https://reapack.com/
+  - 拡張機能（Extension）＞ReaPack ＞ Browse Packages ＞ReaImGui：ReaScript binding for Dear ImGui
+  右クリックしてInstall
 
 2. **スクリプトの保存**
    - `Voice_Lesson_Controller.lua` をダウンロードし、任意の場所（REAPERの `Scripts` フォルダなど）に保存してください。
