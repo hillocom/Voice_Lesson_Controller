@@ -28,13 +28,13 @@
 - 拡張機能（Extension）＞ReaPack ＞ Browse Packages ＞ReaImGui：ReaScript binding for Dear ImGui
 右クリックしてInstall
 
-1. **スクリプトの保存**
+2. **スクリプトの保存**
    - `Voice_Lesson_Controller.lua` をダウンロードし、任意の場所（REAPERの `Scripts` フォルダなど）に保存してください。
-2. **REAPERでのアクティベート**
+3. **REAPERでのアクティベート**
    - REAPERを起動し、あらかじめ**最低1つのトラック**を作成しておきます。
    - メニューの `Actions` ＞ `Show action list...` を開きます。
    - `New action` ＞ `Load ReaScript...` から、保存した `Voice_Lesson_Controller.lua` を選択してインポートします。
-3. **スクリプトの起動**
+4. **スクリプトの起動**
    - リストに追加された `Voice_Lesson_Controller.lua` を選択し、`Run` をクリックするとコントロール画面が表示されます。
    - *（※ よく使う場合は、ショートカットキーやツールバーボタンに割り当てておくと便利です）*
 
